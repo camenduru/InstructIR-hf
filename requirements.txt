@@ -1,5 +1,7 @@
 torch
 transformers
+numpy
+PyYAML
 Pillow>=6.2.2
 sentence-transformers==2.3.0
 gradio==4.16.0
