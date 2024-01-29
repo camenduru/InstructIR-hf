@@ -6,7 +6,7 @@ import os
 import torch
 import numpy as np
 import yaml
-
+from huggingface_hub import hf_hub_download
 #from gradio_imageslider import ImageSlider
 
 ## local code
@@ -25,9 +25,12 @@ def dict2namespace(config):
     return namespace
 
 
+hf_hub_download(repo_id="marcosv/InstructIR", filename="im_instructir-7d.pt", local_dir="./")
+hf_hub_download(repo_id="marcosv/InstructIR", filename="lm_instructir-7d.pt", local_dir="./")
+
 CONFIG     = "configs/eval5d.yml"
-LM_MODEL   = "models/lm_instructir-7d.pt"
-MODEL_NAME = "models/im_instructir-7d.pt"
+LM_MODEL   = "lm_instructir-7d.pt"
+MODEL_NAME = "im_instructir-7d.pt"
 
 # parse config file
 with open(os.path.join(CONFIG), "r") as f:
@@ -89,9 +92,9 @@ description = ''' ## [High-Quality Image Restoration Following Human Instruction
 Computer Vision Lab, University of Wuerzburg | Sony PlayStation, FTG
 
 ### TL;DR: quickstart
-InstructIR takes as input an image and a human-written instruction for how to improve that image. The neural model performs all-in-one image restoration. InstructIR achieves state-of-the-art results on several restoration tasks including image denoising, deraining, deblurring, dehazing, and (low-light) image enhancement.
-
-**🚀 You can start with the [demo tutorial](https://github.com/mv-lab/InstructIR/blob/main/demo.ipynb)**
+***InstructIR takes as input an image and a human-written instruction for how to improve that image.*** 
+The (single) neural model performs all-in-one image restoration. InstructIR achieves state-of-the-art results on several restoration tasks including image denoising, deraining, deblurring, dehazing, and (low-light) image enhancement. 
+**🚀 You can start with the [demo tutorial.](https://github.com/mv-lab/InstructIR/blob/main/demo.ipynb)** Check [our github](https://github.com/mv-lab/InstructIR) for more information
 
 <details>
 <summary> <b> Abstract</b> (click me to read)</summary>
@@ -100,23 +103,27 @@ Image restoration is a fundamental problem that involves recovering a high-quali
 </p>
 </details>
 
-> Disclaimer: please remember this is not a product, thus, you will notice some limitations.
-
+> **Disclaimer:** please remember this is not a product, thus, you will notice some limitations.
 **This demo expects an image with some degradations (blur, noise, rain, low-light, haze) and a prompt requesting what should be done.**
-Due to the GPU memory limitations, the app might crash if you feed a high-resolution image (2K, 4K).
+Due to the GPU memory limitations, the app might crash if you feed a high-resolution image (2K, 4K). <br>
+The model was trained using mostly synthetic data, thus it might not work great on real-world complex images. 
+However, it works surprisingly well on real-world foggy and low-light images.
+You can also try general image enhancement prompts (e.g., "retouch this image", "enhance the colors") and see how it improves the colors.
 
 <br>
 '''
-# **Demo notebook can be found [here](https://github.com/NielsRogge/Transformers-Tutorials/blob/master/Swin2SR/Perform_image_super_resolution_with_Swin2SR.ipynb).
+
 
 article = "<p style='text-align: center'><a href='https://github.com/mv-lab/InstructIR' target='_blank'>High-Quality Image Restoration Following Human Instructions</a></p>"
 
+#### Image,Prompts examples
 examples = [['images/rain-020.png', "I love this photo, could you remove the raindrops? please keep the content intact"],
             ['images/gradio_demo_images/city.jpg', "I took this photo during a foggy day, can you improve it?"], 
             ['images/gradio_demo_images/frog.png', "can you remove the tiny dots in the image? it is very unpleasant"], 
             ["images/lol_748.png", "my image is too dark, I cannot see anything, can you fix it?"], 
             ["images/gopro.png", "I took this photo while I was running, can you stabilize the image? it is too blurry"],
-            ["images/a0010.jpg", "please I want this image for my photo album, can you edit it as a photographer"]]
+            ["images/a0010.jpg", "please I want this image for my photo album, can you edit it as a photographer"],
+            ["images/real_fog.png", "How can I remove the fog and mist from this photo?"]]
 
 css = """
     .image-frame img, .image-container img {
@@ -132,7 +139,7 @@ demo = gr.Interface(
             gr.Image(type="pil", label="Input"),
             gr.Text(label="Prompt")
     ],
-    outputs=[gr.Image(type="pil", label="Ouput")],   #ImageSlider(position=0.5, type="pil", label="SideBySide")], #gr.Image(type="pil", label="Ouput"),  #
+    outputs=[gr.Image(type="pil", label="Ouput")],
     title=title,
     description=description,
     article=article,
@@ -142,16 +149,3 @@ demo = gr.Interface(
 
 if __name__ == "__main__":
     demo.launch()
-
-# with gr.Blocks() as demo:
-#     with gr.Row(equal_height=True):
-#         with gr.Column(scale=1):
-#             input = gr.Image(type="pil", label="Input")
-#         with gr.Column(scale=1):
-#             prompt = gr.Text(label="Prompt")
-#             process_btn = gr.Button("Process")
-#     with gr.Row(equal_height=True):
-#         output = gr.Image(type="pil", label="Ouput")
-#         slider = ImageSlider(position=0.5, type="pil", label="SideBySide")
-#     process_btn.click(fn=process_img, inputs=[input, prompt], outputs=[output, slider])
-# demo.launch(share=True)
